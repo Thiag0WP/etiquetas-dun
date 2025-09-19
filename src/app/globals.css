@@ -18,6 +18,41 @@
     --foreground: #ededed;
   }
 }
+@media print {
+  @page {
+    size: 100mm 150mm;
+    /* largura × altura */
+    margin: 0;
+  }
+
+    @media print {
+      @page {
+        size: 100mm 150mm;
+        margin: 0;
+      }
+  
+      html,
+      body {
+        width: 100mm;
+        height: 150mm;
+        margin: 0;
+        padding: 0;
+      }
+    }
+
+  @media print {
+  @page { size: 100mm 150mm; margin: 0; }
+  html, body { width: 100mm; height: 150mm; margin: 0; padding: 0; }
+}
+
+  html,
+  body {
+    width: 100mm;
+    height: 150mm;
+    margin: 0;
+    padding: 0;
+  }
+}
 
 body {
   background: var(--background);
