@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Etiquetas DUN
 
-## Getting Started
+Sistema para geração de etiquetas DUN (Data Universal de Numeração) com códigos de barras e QR codes.
 
-First, run the development server:
+## 📋 Funcionalidades
+
+- ✅ Geração de etiquetas DUN individuais
+- ✅ Importação em lote via arquivo CSV
+- ✅ Códigos de barras no padrão GS1
+- ✅ QR codes para facilitar a leitura
+- ✅ Interface responsiva e moderna
+- ✅ Impressão otimizada das etiquetas
+
+## 🛠️ Tecnologias
+
+- **Framework:** Next.js 15.5.3
+- **Frontend:** React 19 + TypeScript
+- **Styling:** Tailwind CSS
+- **Códigos de Barras:** react-barcode
+- **Processamento CSV:** PapaParse
+
+## 🚀 Como executar
+
+### Pré-requisitos
+
+- Node.js 18+
+- npm ou yarn
+
+### Instalação
+
+1. Clone o repositório:
+
+```bash
+git clone https://github.com/SEU_USUARIO/etiquetas-dun.git
+cd etiquetas-dun
+```
+
+2. Instale as dependências:
+
+```bash
+npm install
+```
+
+3. Execute o projeto em modo de desenvolvimento:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📖 Como usar
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Etiqueta Individual
 
-## Learn More
+1. Acesse a página inicial
+2. Selecione "Etiqueta Individual"
+3. Preencha os dados do produto
+4. Clique em "Gerar Etiqueta"
+5. Use o botão de impressão para imprimir
 
-To learn more about Next.js, take a look at the following resources:
+### Importação CSV
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Acesse "Importar CSV"
+2. Faça upload de um arquivo CSV com as colunas:
+   - `produto` (nome do produto)
+   - `codigo` (código DUN)
+   - `descricao` (descrição adicional)
+3. Visualize e imprima as etiquetas geradas
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Estrutura do Projeto
 
-## Deploy on Vercel
+```
+src/
+├── app/
+│   ├── _components/         # Componentes reutilizáveis
+│   │   └── DunLabel.tsx    # Componente da etiqueta
+│   ├── _utils/             # Utilitários
+│   │   └── gs1.ts          # Funções GS1
+│   ├── dun/                # Páginas DUN
+│   │   ├── csv/            # Importação CSV
+│   │   └── gs1/            # Etiqueta individual
+│   ├── layout.tsx          # Layout principal
+│   └── page.tsx            # Página inicial
+├── data/
+│   └── dun.ts              # Dados e tipos DUN
+└── types/
+    └── dun.ts              # Definições TypeScript
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🤝 Contribuindo
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/nova-feature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## 📞 Contato
+
+Para dúvidas ou sugestões, abra uma issue no repositório.
