@@ -41,13 +41,19 @@ cd etiquetas-dun
 npm install
 ```
 
-3. Execute o projeto em modo de desenvolvimento:
+3. Configure as dependências específicas do projeto:
+
+```bash
+npm run setup
+```
+
+4. Execute o projeto em modo de desenvolvimento:
 
 ```bash
 npm run dev
 ```
 
-4. Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
+5. Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
 
 ## 📖 Como usar
 
