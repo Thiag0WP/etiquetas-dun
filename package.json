@@ -2,19 +2,20 @@
   "name": "etiquetas-dun",
   "version": "0.1.0",
   "private": true,
- "scripts": {
-  "dev": "next dev",
-  "build": "next build",
-  "start": "next start",
-  "setup": "npm install react-barcode papaparse && npm install --save-dev @types/papaparse && npm i papaparse"
-},
-
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "setup": "npm install react-barcode papaparse && npm install --save-dev @types/papaparse && npm i papaparse"
+  },
   "dependencies": {
     "next": "15.5.3",
     "papaparse": "^5.5.3",
     "react": "19.1.0",
     "react-barcode": "^1.6.1",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "react-qr-code": "^2.0.18",
+    "react-to-print": "^3.1.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
