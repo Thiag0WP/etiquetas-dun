@@ -363,4 +363,5 @@ export default function QrCodePage() {
       </div>
     </div>
   );
+  // return (
 }
