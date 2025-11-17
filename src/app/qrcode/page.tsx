@@ -25,6 +25,7 @@ interface SavedQrSet {
     showLabels: boolean;
     showValues: boolean;
     paperSize: "A4" | "60x40" | "100x150" | "custom";
+    rotateText?: boolean;
   };
 }
 
@@ -57,6 +58,7 @@ export default function QrCodePage() {
   const [autoFont, setAutoFont] = useState(false); // 💥 nova opção automática
   const [showLabels, setShowLabels] = useState(true);
   const [showValues, setShowValues] = useState(true);
+  const [rotateText, setRotateText] = useState(false); // Nova opção para rotacionar texto
 
   // Novo: seletor de formato de papel
   const [paperSize, setPaperSize] = useState<
@@ -103,6 +105,7 @@ export default function QrCodePage() {
         showLabels,
         showValues,
         paperSize,
+        rotateText,
       },
     };
 
@@ -130,6 +133,7 @@ export default function QrCodePage() {
       setShowLabels(set.settings.showLabels);
       setShowValues(set.settings.showValues);
       setPaperSize(set.settings.paperSize);
+      setRotateText(set.settings.rotateText || false);
     }
 
     setShowLoadDialog(false);
@@ -473,7 +477,7 @@ export default function QrCodePage() {
             <h3 className="text-lg font-semibold text-gray-800">
               🔄 Orientação de Impressão
             </h3>
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center flex-wrap">
               <button
                 onClick={() => setOrientation("portrait")}
                 className={`px-4 py-2 rounded-md font-medium ${
@@ -495,6 +499,21 @@ export default function QrCodePage() {
                 📃 Paisagem (Horizontal)
               </button>
             </div>
+
+            {/* Opção para rotacionar texto */}
+            {orientation === "landscape" && (
+              <div className="flex items-center gap-2 mt-3 p-3 bg-blue-50 rounded-md">
+                <input
+                  type="checkbox"
+                  checked={rotateText}
+                  onChange={(e) => setRotateText(e.target.checked)}
+                  className="h-4 w-4"
+                />
+                <span className="text-sm text-gray-700">
+                  🔄 Rotacionar texto 90° (texto de lado na paisagem)
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Ações */}
@@ -648,6 +667,7 @@ export default function QrCodePage() {
               labelFontSize={finalLabelFont}
               valueFontSize={finalValueFont}
               orientation={orientation}
+              rotateText={rotateText}
             />
           </div>
         ))}

@@ -15,6 +15,7 @@ type QrCardProps = {
   labelFontSize?: number;
   valueFontSize?: number;
   orientation?: "portrait" | "landscape";
+  rotateText?: boolean;
 };
 
 export function QrCard({
@@ -30,6 +31,7 @@ export function QrCard({
   labelFontSize = 8,
   valueFontSize = 6,
   orientation = "portrait",
+  rotateText = false,
 }: QrCardProps) {
   // Ajusta dimensões baseado na orientação
   const actualWidth = orientation === "landscape" ? heightMm : widthMm;
@@ -66,6 +68,9 @@ export function QrCard({
     justifyContent: "center",
     padding: "4px",
     boxSizing: "border-box" as const,
+    transform:
+      rotateText && orientation === "landscape" ? "rotate(-90deg)" : "none",
+    transformOrigin: "center" as const,
   };
 
   const labelStyle = {
