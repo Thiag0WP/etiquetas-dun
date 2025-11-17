@@ -14,6 +14,7 @@ type QrCardProps = {
   qrSizePercent?: number;
   labelFontSize?: number;
   valueFontSize?: number;
+  orientation?: "portrait" | "landscape";
 };
 
 export function QrCard({
@@ -28,11 +29,15 @@ export function QrCard({
   qrSizePercent = 70,
   labelFontSize = 8,
   valueFontSize = 6,
+  orientation = "portrait",
 }: QrCardProps) {
+  // Ajusta dimensões baseado na orientação
+  const actualWidth = orientation === "landscape" ? heightMm : widthMm;
+  const actualHeight = orientation === "landscape" ? widthMm : heightMm;
   // Melhor cálculo de conversão mm para pixels (para impressão e tela)
   const mmToPx = 4; // Fator de conversão mais preciso
-  const widthPx = widthMm * mmToPx;
-  const heightPx = heightMm * mmToPx;
+  const widthPx = actualWidth * mmToPx;
+  const heightPx = actualHeight * mmToPx;
 
   // Calcula alturas dos textos com base no tamanho da fonte
   const labelHeight = showLabel && label ? labelFontSize * 1.5 + 4 : 0;
@@ -52,8 +57,8 @@ export function QrCard({
 
   // Estilos dinâmicos para melhor aproveitamento do espaço
   const containerStyle = {
-    width: `${widthMm}mm`,
-    height: `${heightMm}mm`,
+    width: `${actualWidth}mm`,
+    height: `${actualHeight}mm`,
     pageBreakInside: "avoid" as const,
     display: "flex",
     flexDirection: "column" as const,
@@ -69,6 +74,7 @@ export function QrCard({
     margin: showLabel && label ? "0 0 2px 0" : "0",
     maxHeight: `${labelFontSize * 1.5}px`,
     overflow: "hidden" as const,
+    color: color,
   };
 
   const valueStyle = {
@@ -77,16 +83,20 @@ export function QrCard({
     margin: showValue ? "2px 0 0 0" : "0",
     maxHeight: `${valueFontSize * 1.5}px`,
     overflow: "hidden" as const,
+    color: color,
   };
 
   return (
     <div
-      className="border border-gray-300 rounded-md bg-white text-center"
-      style={containerStyle}
+      className="border rounded-md bg-white text-center"
+      style={{
+        ...containerStyle,
+        borderColor: color,
+      }}
     >
       {showLabel && label && (
         <div
-          className="font-semibold text-gray-700 break-words w-full text-center"
+          className="font-semibold break-words w-full text-center"
           style={labelStyle}
         >
           {label.length > 30 ? `${label.substring(0, 30)}...` : label}
@@ -111,10 +121,7 @@ export function QrCard({
       </div>
 
       {showValue && (
-        <div
-          className="text-gray-500 break-words w-full text-center"
-          style={valueStyle}
-        >
+        <div className="break-words w-full text-center" style={valueStyle}>
           {value.length > 40 ? `${value.substring(0, 40)}...` : value}
         </div>
       )}
