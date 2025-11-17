@@ -103,6 +103,29 @@ export default function PageGS1() {
     <main className="min-h-dvh bg-neutral-100 p-6 print:bg-white">
       <div className="mx-auto max-w-[230mm]">
         <header className="print:hidden mb-4 space-y-3">
+          {/* Botão Voltar */}
+          <div className="mb-4">
+            <a
+              href="/"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+              Voltar para Início
+            </a>
+          </div>
+
           {/* Linha 1: Upload e Orientação */}
           <div className="flex items-center gap-3">
             <input

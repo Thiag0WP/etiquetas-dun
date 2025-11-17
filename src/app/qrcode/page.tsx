@@ -270,6 +270,29 @@ export default function QrCodePage() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b no-print">
         <div className="max-w-7xl mx-auto px-4 py-6">
+          {/* Botão Voltar */}
+          <div className="mb-4">
+            <a
+              href="/"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+              Voltar para Início
+            </a>
+          </div>
+
           <h1 className="text-3xl font-bold text-gray-900">
             🔳 Gerador de Etiquetas QR
           </h1>
