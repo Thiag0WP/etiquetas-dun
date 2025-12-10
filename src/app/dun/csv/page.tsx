@@ -32,16 +32,44 @@ export default function PageCsv() {
       header: true,
       skipEmptyLines: true,
       complete: (res) => {
-        const rows = (res.data as any[]).map((r) => ({
-          sku: String(r["SKU"] ?? "").trim(),
-          gtin14: String(r["GTIN-14"] ?? "").trim(),
-          product: String(r["Produto"] ?? "").trim(),
-          qtyPerBox: Number(r["QUANTIDADE POR CAIXA"] ?? 0),
-          boxSize: String(r["TAMANHO CAIXA"] ?? "").trim(),
-          weightKg: String(r["PESO KG"] ?? "").trim(),
-          lot: undefined, // não vem no CSV
-          expiry: undefined, // não vem no CSV
-        }));
+        const rows = (res.data as any[]).map((r) => {
+          const qty = Number(
+            String(
+              r["QUANTIDADE POR CAIXA"] ??
+                r["qtyPerBox"] ??
+                r["qtdPerBox"] ??
+                r["qtd_caixa"] ??
+                r["qtd"] ??
+                r["quantidade"] ??
+                r["Quantidade"] ??
+                0
+            )
+              .toString()
+              .replace(",", ".")
+          );
+          return {
+            sku: String(r["SKU"] ?? r["sku"] ?? "").trim(),
+            gtin14: String(
+              r["GTIN-14"] ?? r["gtin14"] ?? r["GTIN14"] ?? ""
+            ).trim(),
+            product: String(
+              r["Produto"] ?? r["produto"] ?? r["product"] ?? ""
+            ).trim(),
+            qtyPerBox: Number.isFinite(qty) ? qty : 0,
+            boxSize: String(
+              r["TAMANHO CAIXA"] ??
+                r["boxSize"] ??
+                r["tamCaixa"] ??
+                r["tam_caixa"] ??
+                ""
+            ).trim(),
+            weightKg: String(
+              r["PESO KG"] ?? r["weightKg"] ?? r["pesoKg"] ?? ""
+            ).trim(),
+            lot: undefined, // não vem no CSV
+            expiry: undefined, // não vem no CSV
+          };
+        });
         setLabels(rows.filter((x) => x.sku && x.gtin14));
       },
       error: (err) => alert("Erro no CSV: " + err.message),

@@ -35,10 +35,18 @@ export default function PageGS1() {
       complete: (res) => {
         const rows = (res.data as any[]).map((r) => {
           const qty = Number(
-            String(r.qtyPerBox ?? r.qtdPerBox ?? r.qtd_caixa ?? r.qtd).replace(
-              ",",
-              "."
+            String(
+              r.qtyPerBox ??
+                r.qtdPerBox ??
+                r.qtd_caixa ??
+                r.qtd ??
+                r["QUANTIDADE POR CAIXA"] ??
+                r["quantidade"] ??
+                r["Quantidade"] ??
+                0
             )
+              .toString()
+              .replace(",", ".")
           );
           return {
             sku: String(r.sku ?? r.SKU ?? "").trim(),
