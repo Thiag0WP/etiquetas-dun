@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import Papa from "papaparse";
 import { useReactToPrint } from "react-to-print";
 import { QrCard } from "../_components/QrCard";
+import { FileDropZone } from "../_components/FileDropZone";
+import { useToast } from "../_components/Toast";
 
 type QrData = { label?: string; value: string };
 
@@ -45,7 +47,12 @@ export default function QrCodePage() {
   const [showLoadDialog, setShowLoadDialog] = useState(false);
   const [saveName, setSaveName] = useState("");
 
-  // Cores e estilos
+  // Hook para notificações
+  const { showSuccess, showError } = useToast();
+
+  // Estados de loading
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState(""); // Cores e estilos
   const [color, setColor] = useState("#000000");
   const [bgColor, setBgColor] = useState("#FFFFFF");
 
@@ -81,9 +88,9 @@ export default function QrCodePage() {
     }
   };
 
-  const handleSaveSet = () => {
+  const handleSaveSet = async () => {
     if (!saveName.trim()) {
-      alert("Por favor, insira um nome para salvar");
+      showError("Por favor, insira um nome para salvar");
       return;
     }
 
@@ -114,10 +121,19 @@ export default function QrCodePage() {
     setSavedSets(updatedSets);
     setSaveName("");
     setShowSaveDialog(false);
-    alert("QR Codes salvos com sucesso!");
+
+    setIsLoading(false);
+    setLoadingMessage("");
+    showSuccess("QR Codes salvos com sucesso!");
   };
 
-  const handleLoadSet = (set: SavedQrSet) => {
+  const handleLoadSet = async (set: SavedQrSet) => {
+    setIsLoading(true);
+    setLoadingMessage("Carregando QR Codes...");
+
+    // Simular operação assíncrona para feedback visual
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
     setQrList(set.qrList);
     setOrientation(set.orientation || "portrait");
 
@@ -137,6 +153,8 @@ export default function QrCodePage() {
     }
 
     setShowLoadDialog(false);
+    setIsLoading(false);
+    setLoadingMessage("");
   };
 
   const handleDeleteSet = (id: string) => {
@@ -234,6 +252,10 @@ export default function QrCodePage() {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    setIsLoading(true);
+    setLoadingMessage("Importando arquivo CSV...");
+
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -242,6 +264,14 @@ export default function QrCodePage() {
           .filter((r: any) => r?.value)
           .map((r: any) => ({ label: r.label || undefined, value: r.value }));
         setQrList(validData);
+        setIsLoading(false);
+        setLoadingMessage("");
+      },
+      error: (error) => {
+        console.error("Erro ao processar CSV:", error);
+        showError("Erro ao processar o arquivo CSV. Verifique o formato.");
+        setIsLoading(false);
+        setLoadingMessage("");
       },
     });
   };
@@ -266,7 +296,17 @@ export default function QrCodePage() {
   const finalValueFont = autoFont ? autoValueFont : valueFontSize;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 relative">
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg flex items-center space-x-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <span className="text-gray-700 font-medium">{loadingMessage}</span>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white shadow-sm border-b no-print">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -311,12 +351,13 @@ export default function QrCodePage() {
             <h3 className="text-lg font-semibold text-gray-800">
               📁 Importar CSV
             </h3>
-            <div className="flex flex-wrap gap-3 items-center">
-              <input
-                type="file"
-                accept=".csv"
-                onChange={handleFile}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+            <div className="space-y-3">
+              <FileDropZone
+                onFileSelect={(file) =>
+                  handleFile({ target: { files: [file] } } as any)
+                }
+                disabled={isLoading}
+                className="w-full"
               />
               <button
                 onClick={handleDownloadExample}

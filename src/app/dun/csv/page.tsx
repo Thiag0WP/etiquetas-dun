@@ -3,6 +3,10 @@
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
 import DunLabel from "@/app/_components/DunLabel";
+import { FileDropZone } from "@/app/_components/FileDropZone";
+import { ValidationFeedback } from "@/app/_components/ValidationFeedback";
+import { useToast } from "@/app/_components/Toast";
+import { validateLabelList } from "@/app/_utils/validation";
 import type { DunLabel as DunLabelType } from "@/types/dun";
 import {
   saveLabelSet,
@@ -23,11 +27,26 @@ export default function PageCsv() {
   const [showLoadDialog, setShowLoadDialog] = useState(false);
   const [saveName, setSaveName] = useState("");
 
+  // Hook para notificações
+  const { showSuccess, showError, showWarning } = useToast();
+
+  // Estados de loading
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState(""); // Estados para feedback de validação
+  const [validationFeedback, setValidationFeedback] = useState<{
+    validCount: number;
+    invalidCount: number;
+    invalidLabels: any[];
+  } | null>(null);
+
   useEffect(() => {
     setSavedSets(getSavedLabelSets());
   }, []);
 
   function handleCSV(file: File) {
+    setIsLoading(true);
+    setLoadingMessage("Importando arquivo CSV...");
+
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -70,28 +89,74 @@ export default function PageCsv() {
             expiry: undefined, // não vem no CSV
           };
         });
-        setLabels(rows.filter((x) => x.sku && x.gtin14));
+
+        // Validar dados antes de definir
+        const { validLabels, invalidLabels } = validateLabelList(rows);
+
+        setLabels(validLabels);
+        setValidationFeedback({
+          validCount: validLabels.length,
+          invalidCount: invalidLabels.length,
+          invalidLabels: invalidLabels,
+        });
+
+        setIsLoading(false);
+        setLoadingMessage("");
+
+        // Mostrar feedback se houver problemas
+        if (invalidLabels.length > 0) {
+          showWarning(
+            `Processamento concluído: ${validLabels.length} etiquetas válidas, ${invalidLabels.length} inválidas. Verifique os detalhes abaixo.`
+          );
+        } else {
+          showSuccess(
+            `${validLabels.length} etiquetas importadas com sucesso!`
+          );
+        }
       },
-      error: (err) => alert("Erro no CSV: " + err.message),
+      error: (err) => {
+        showError("Erro no CSV: " + err.message);
+        setIsLoading(false);
+        setLoadingMessage("");
+      },
     });
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!saveName.trim()) {
-      alert("Por favor, insira um nome para salvar");
+      showError("Por favor, insira um nome para salvar");
       return;
     }
+
+    setIsLoading(true);
+    setLoadingMessage("Salvando etiquetas...");
+
+    // Simular operação assíncrona para feedback visual
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     saveLabelSet(saveName, labels, orientation);
     setSavedSets(getSavedLabelSets());
     setSaveName("");
     setShowSaveDialog(false);
-    alert("Etiquetas salvas com sucesso!");
+
+    setIsLoading(false);
+    setLoadingMessage("");
+    showSuccess("Etiquetas salvas com sucesso!");
   };
 
-  const handleLoad = (set: SavedLabelSet) => {
+  const handleLoad = async (set: SavedLabelSet) => {
+    setIsLoading(true);
+    setLoadingMessage("Carregando etiquetas...");
+
+    // Simular operação assíncrona para feedback visual
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
     setLabels(set.labels);
     setOrientation(set.orientation || "portrait");
     setShowLoadDialog(false);
+
+    setIsLoading(false);
+    setLoadingMessage("");
   };
 
   const handleDelete = (id: string) => {
@@ -102,7 +167,17 @@ export default function PageCsv() {
   };
 
   return (
-    <main className="min-h-dvh bg-neutral-100 p-6 print:bg-white">
+    <main className="min-h-dvh bg-neutral-100 p-6 print:bg-white relative">
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg flex items-center space-x-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <span className="text-gray-700 font-medium">{loadingMessage}</span>
+          </div>
+        </div>
+      )}
+
       {/* Upload + Botões */}
       <header className="print:hidden mb-4 space-y-3">
         {/* Botão Voltar */}
@@ -129,16 +204,14 @@ export default function PageCsv() {
         </div>
 
         {/* Linha 1: Upload e Orientação */}
-        <div className="flex items-center gap-3">
-          <input
-            type="file"
-            accept=".csv"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) handleCSV(f);
-            }}
-            className="block bg-gray-600 text-white px-4 py-2 rounded-xl cursor-pointer shadow"
+        <div className="space-y-4">
+          {/* Área de Upload com Drag & Drop */}
+          <FileDropZone
+            onFileSelect={handleCSV}
+            disabled={isLoading}
+            className="w-full"
           />
+
           <div className="flex gap-2 items-center">
             <label className="text-sm font-semibold">Orientação:</label>
             <button
@@ -163,6 +236,47 @@ export default function PageCsv() {
             </button>
           </div>
         </div>
+
+        {/* Feedback de Validação */}
+        {validationFeedback && (
+          <div className="bg-white p-4 rounded-lg border">
+            <h3 className="font-semibold mb-2">Resultado da Importação</h3>
+            <div className="flex gap-6 mb-3">
+              <div className="text-green-600">
+                ✓ {validationFeedback.validCount} etiquetas válidas
+              </div>
+              {validationFeedback.invalidCount > 0 && (
+                <div className="text-red-600">
+                  ✗ {validationFeedback.invalidCount} etiquetas com problemas
+                </div>
+              )}
+            </div>
+
+            {validationFeedback.invalidLabels.length > 0 && (
+              <details className="text-sm">
+                <summary className="cursor-pointer text-red-700 font-medium hover:text-red-800">
+                  Ver problemas detectados
+                </summary>
+                <div className="mt-2 space-y-2 max-h-40 overflow-y-auto">
+                  {validationFeedback.invalidLabels.map((label, idx) => (
+                    <div
+                      key={idx}
+                      className="border-l-4 border-red-400 pl-3 py-2 bg-red-50"
+                    >
+                      <div className="font-medium text-red-800">
+                        SKU: {label.sku || "N/A"} | GTIN:{" "}
+                        {label.gtin14 || "N/A"}
+                      </div>
+                      <div className="text-red-600 text-xs">
+                        {label.errors.join(", ")}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
+        )}
 
         {/* Linha 2: Ações */}
         {labels.length > 0 && (
