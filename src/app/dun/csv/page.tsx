@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
 import DunLabel from "@/app/_components/DunLabel";
+import DunLabelContainer from "@/app/_components/DunLabelContainer";
 import { FileDropZone } from "@/app/_components/FileDropZone";
 import { ValidationFeedback } from "@/app/_components/ValidationFeedback";
 import { useToast } from "@/app/_components/Toast";
@@ -22,6 +23,9 @@ export default function PageCsv() {
   const [orientation, setOrientation] = useState<"portrait" | "landscape">(
     "portrait"
   );
+  const [layout, setLayout] = useState<"single" | "double">("single");
+  const [showBoxSize, setShowBoxSize] = useState(true);
+  const [showWeight, setShowWeight] = useState(true);
   const [savedSets, setSavedSets] = useState<SavedLabelSet[]>([]);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showLoadDialog, setShowLoadDialog] = useState(false);
@@ -235,6 +239,54 @@ export default function PageCsv() {
               Paisagem
             </button>
           </div>
+
+          {/* Controles de Layout */}
+          <div className="flex gap-2 items-center">
+            <label className="text-sm font-semibold">Layout:</label>
+            <button
+              onClick={() => setLayout("single")}
+              className={`px-3 py-1 rounded ${
+                layout === "single"
+                  ? "bg-black text-white"
+                  : "bg-gray-300 text-black"
+              }`}
+            >
+              1 Etiqueta
+            </button>
+            <button
+              onClick={() => setLayout("double")}
+              className={`px-3 py-1 rounded ${
+                layout === "double"
+                  ? "bg-black text-white"
+                  : "bg-gray-300 text-black"
+              }`}
+            >
+              2 Etiquetas
+            </button>
+          </div>
+
+          {/* Controles de Campos Opcionais */}
+          <div className="flex gap-4 items-center">
+            <label className="text-sm font-semibold">Mostrar:</label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={showBoxSize}
+                onChange={(e) => setShowBoxSize(e.target.checked)}
+                className="rounded"
+              />
+              <span className="text-sm">Tamanho da Caixa</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={showWeight}
+                onChange={(e) => setShowWeight(e.target.checked)}
+                className="rounded"
+              />
+              <span className="text-sm">Peso da Caixa</span>
+            </label>
+          </div>
         </div>
 
         {/* Feedback de Validação */}
@@ -415,7 +467,13 @@ export default function PageCsv() {
         <section className="grid gap-8 print:gap-0">
           {labels.map((d, i) => (
             <div key={i} className="break-after-page print:break-after-page">
-              <DunLabel data={d} orientation={orientation} />
+              <DunLabelContainer
+                data={d}
+                orientation={orientation}
+                layout={layout}
+                showBoxSize={showBoxSize}
+                showWeight={showWeight}
+              />
             </div>
           ))}
         </section>
