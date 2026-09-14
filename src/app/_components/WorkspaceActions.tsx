@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 type Props = {
   onPrint: () => void;
-  onSave: () => void;
+  onDownloadPDF: () => void;
   onLoad: () => void;
   onExportCSV: () => void;
   extra?: ReactNode;
@@ -12,7 +12,7 @@ type Props = {
 
 export function WorkspaceActions({
   onPrint,
-  onSave,
+  onDownloadPDF,
   onLoad,
   onExportCSV,
   extra,
@@ -26,10 +26,10 @@ export function WorkspaceActions({
         Imprimir
       </button>
       <button
-        onClick={onSave}
+        onClick={onDownloadPDF}
         className="px-4 py-2 rounded-xl bg-green-600 text-white shadow"
       >
-        Salvar Etiquetas
+        Baixar PDF
       </button>
       <button
         onClick={onLoad}

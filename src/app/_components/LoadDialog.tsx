@@ -2,55 +2,6 @@
 
 import type { SavedLabelSet } from "@/app/_utils/labelStorage";
 
-type SaveDialogProps = {
-  show: boolean;
-  onClose: () => void;
-  saveName: string;
-  setSaveName: (name: string) => void;
-  onSave: () => void;
-};
-
-export function SaveDialog({
-  show,
-  onClose,
-  saveName,
-  setSaveName,
-  onSave,
-}: SaveDialogProps) {
-  if (!show) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
-        <h2 className="text-xl font-bold mb-4 text-black">
-          Salvar Etiquetas
-        </h2>
-        <input
-          type="text"
-          value={saveName}
-          onChange={(e) => setSaveName(e.target.value)}
-          placeholder="Nome do conjunto de etiquetas"
-          className="w-full px-3 py-2 border border-gray-300 rounded mb-4 text-black placeholder:text-gray-500"
-        />
-        <div className="flex gap-3 justify-end">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded bg-gray-300 text-black"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={onSave}
-            className="px-4 py-2 rounded bg-green-600 text-white"
-          >
-            Salvar
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 type LoadDialogProps = {
   show: boolean;
   onClose: () => void;

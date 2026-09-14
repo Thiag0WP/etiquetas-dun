@@ -12,11 +12,11 @@ import {
   validateQuantity,
 } from "@/app/_utils/validation";
 import {
-  saveLabelSet,
   getSavedLabelSets,
   deleteLabelSet,
   type SavedLabelSet,
 } from "@/app/_utils/labelStorage";
+import { exportLabelsToPDF } from "@/app/_utils/pdfExport";
 import type { DunLabel } from "@/types/dun";
 
 export type InvalidLabel = DunLabel & { errors: string[] };
@@ -35,10 +35,8 @@ export function useLabelWorkspace(initialLabels: DunLabel[] = []) {
   );
   const [layout, setLayout] = useState<"single" | "double">("single");
   const [savedSets, setSavedSets] = useState<SavedLabelSet[]>([]);
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showLoadDialog, setShowLoadDialog] = useState(false);
   const [showManualDialog, setShowManualDialog] = useState(false);
-  const [saveName, setSaveName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [validationFeedback, setValidationFeedback] =
@@ -89,26 +87,33 @@ export function useLabelWorkspace(initialLabels: DunLabel[] = []) {
     });
   }
 
-  const handleSave = async () => {
-    if (!saveName.trim()) {
-      showError("Por favor, insira um nome para salvar");
+  /** Gera e baixa um PDF com uma página por etiqueta, no tamanho físico exato. */
+  const handleDownloadPDF = async (nodes: HTMLElement[]) => {
+    if (nodes.length === 0) {
+      showError("Não há etiquetas para gerar o PDF");
       return;
     }
 
     setIsLoading(true);
-    setLoadingMessage("Salvando etiquetas...");
+    setLoadingMessage("Gerando PDF...");
 
-    // Simular operação assíncrona para feedback visual
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    saveLabelSet(saveName, labels, orientation);
-    setSavedSets(getSavedLabelSets());
-    setSaveName("");
-    setShowSaveDialog(false);
-
-    setIsLoading(false);
-    setLoadingMessage("");
-    showSuccess("Etiquetas salvas com sucesso!");
+    try {
+      await exportLabelsToPDF(
+        nodes,
+        orientation,
+        layout,
+        `etiquetas-dun-${Date.now()}.pdf`
+      );
+      showSuccess("PDF gerado com sucesso!");
+    } catch (err) {
+      showError(
+        "Erro ao gerar PDF: " +
+          (err instanceof Error ? err.message : "erro desconhecido")
+      );
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage("");
+    }
   };
 
   const handleLoad = async (set: SavedLabelSet) => {
@@ -169,19 +174,15 @@ export function useLabelWorkspace(initialLabels: DunLabel[] = []) {
     layout,
     setLayout,
     savedSets,
-    showSaveDialog,
-    setShowSaveDialog,
     showLoadDialog,
     setShowLoadDialog,
     showManualDialog,
     setShowManualDialog,
-    saveName,
-    setSaveName,
     isLoading,
     loadingMessage,
     validationFeedback,
     handleCSV,
-    handleSave,
+    handleDownloadPDF,
     handleLoad,
     handleDelete,
     addLabel,

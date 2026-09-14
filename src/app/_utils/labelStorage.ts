@@ -10,22 +10,6 @@ export interface SavedLabelSet {
 
 const STORAGE_KEY = "dun-saved-labels";
 
-export function saveLabelSet(name: string, labels: DunLabel[], orientation: "portrait" | "landscape" = "portrait"): SavedLabelSet {
-  const savedSets = getSavedLabelSets();
-  const newSet: SavedLabelSet = {
-    id: Date.now().toString(),
-    name,
-    labels,
-    createdAt: new Date().toISOString(),
-    orientation,
-  };
-  
-  savedSets.push(newSet);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(savedSets));
-  
-  return newSet;
-}
-
 export function getSavedLabelSets(): SavedLabelSet[] {
   if (typeof window === "undefined") return [];
   

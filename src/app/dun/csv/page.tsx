@@ -1,12 +1,13 @@
 "use client";
 
+import { useRef } from "react";
 import DunLabelContainer from "@/app/_components/DunLabelContainer";
 import { FileDropZone } from "@/app/_components/FileDropZone";
 import { LoadingOverlay } from "@/app/_components/LoadingOverlay";
 import { BackButton, WorkspaceControls } from "@/app/_components/WorkspaceControls";
 import { ImportFeedbackPanel } from "@/app/_components/ImportFeedbackPanel";
 import { WorkspaceActions } from "@/app/_components/WorkspaceActions";
-import { SaveDialog, LoadDialog } from "@/app/_components/SaveLoadDialogs";
+import { LoadDialog } from "@/app/_components/LoadDialog";
 import { ManualLabelForm } from "@/app/_components/ManualLabelForm";
 import { useLabelWorkspace } from "@/app/_hooks/useLabelWorkspace";
 import { exportToJSON, exportToCSV } from "@/app/_utils/labelStorage";
@@ -19,24 +20,22 @@ export default function PageCsv() {
     layout,
     setLayout,
     savedSets,
-    showSaveDialog,
-    setShowSaveDialog,
     showLoadDialog,
     setShowLoadDialog,
     showManualDialog,
     setShowManualDialog,
-    saveName,
-    setSaveName,
     isLoading,
     loadingMessage,
     validationFeedback,
     handleCSV,
-    handleSave,
+    handleDownloadPDF,
     handleLoad,
     handleDelete,
     addLabel,
     removeLabel,
   } = useLabelWorkspace();
+
+  const labelRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   return (
     <main className="min-h-dvh bg-neutral-100 p-6 print:bg-white relative">
@@ -66,20 +65,16 @@ export default function PageCsv() {
         {labels.length > 0 && (
           <WorkspaceActions
             onPrint={() => window.print()}
-            onSave={() => setShowSaveDialog(true)}
+            onDownloadPDF={() =>
+              handleDownloadPDF(
+                labelRefs.current.filter((el): el is HTMLDivElement => el !== null)
+              )
+            }
             onLoad={() => setShowLoadDialog(true)}
             onExportCSV={() => exportToCSV(labels)}
           />
         )}
       </header>
-
-      <SaveDialog
-        show={showSaveDialog}
-        onClose={() => setShowSaveDialog(false)}
-        saveName={saveName}
-        setSaveName={setSaveName}
-        onSave={handleSave}
-      />
 
       <LoadDialog
         show={showLoadDialog}
@@ -112,11 +107,19 @@ export default function PageCsv() {
               <button
                 onClick={() => removeLabel(i)}
                 title="Remover etiqueta"
+                data-pdf-ignore
                 className="print:hidden absolute -top-2 -right-2 z-10 w-7 h-7 rounded-full bg-red-600 text-white text-sm font-bold shadow hover:bg-red-700"
               >
                 ×
               </button>
-              <DunLabelContainer data={d} orientation={orientation} layout={layout} />
+              <DunLabelContainer
+                ref={(el) => {
+                  labelRefs.current[i] = el;
+                }}
+                data={d}
+                orientation={orientation}
+                layout={layout}
+              />
             </div>
           ))}
         </section>

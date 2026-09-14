@@ -1,5 +1,6 @@
 "use client";
 
+import { forwardRef } from "react";
 import dynamic from "next/dynamic";
 import type { DunLabel } from "@/types/dun";
 
@@ -11,11 +12,10 @@ type Props = {
   layout?: "single" | "double"; // Layout: 1 ou 2 etiquetas por folha
 };
 
-export default function DunLabel({
-  data,
-  orientation = "portrait",
-  layout = "single",
-}: Props) {
+const DunLabel = forwardRef<HTMLDivElement, Props>(function DunLabel(
+  { data, orientation = "portrait", layout = "single" },
+  ref
+) {
   // Ajustes finos (testar na sua Zebra e leitor)
   const itfWidth = 2.0;
   const skuWidth = 2.0;
@@ -43,7 +43,7 @@ export default function DunLabel({
   }
 
   return (
-    <div className={containerClass}>
+    <div ref={ref} data-pdf-frame className={containerClass}>
       {isLandscape ? (
         <>
           {/* Layout Paisagem */}
@@ -271,4 +271,6 @@ export default function DunLabel({
       )}
     </div>
   );
-}
+});
+
+export default DunLabel;

@@ -9,6 +9,8 @@
     "setup": "npm install react-barcode papaparse && npm install --save-dev @types/papaparse && npm i papaparse"
   },
   "dependencies": {
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "next": "^15.5.7",
     "papaparse": "^5.5.3",
     "react": "19.1.0",
