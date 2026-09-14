@@ -5,8 +5,4 @@ export const dunSample: DunLabel = {
   gtin14: "27898971826272",
   product: "Pasta de Dente Relax - Limão e Canela Vegano Alva 90g",
   qtyPerBox: 24,
-  boxSize: "32X25X16",
-  weightKg: "3,095",
-  lot: "L2409-A",
-  expiry: "2026-03-31",
 };

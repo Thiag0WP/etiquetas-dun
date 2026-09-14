@@ -7,27 +7,15 @@ type Props = {
   data: DunLabelType;
   orientation?: "portrait" | "landscape";
   layout?: "single" | "double";
-  showBoxSize?: boolean;
-  showWeight?: boolean;
 };
 
 export default function DunLabelContainer({
   data,
   orientation = "portrait",
   layout = "single",
-  showBoxSize = true,
-  showWeight = true,
 }: Props) {
   if (layout === "single") {
-    return (
-      <DunLabel
-        data={data}
-        orientation={orientation}
-        layout="single"
-        showBoxSize={showBoxSize}
-        showWeight={showWeight}
-      />
-    );
+    return <DunLabel data={data} orientation={orientation} layout="single" />;
   }
 
   // Layout duplo: 2 etiquetas idênticas por folha 100x150mm
@@ -40,20 +28,8 @@ export default function DunLabelContainer({
     <div
       className={`${containerClass} page-break-after-always print:page-break-after-always`}
     >
-      <DunLabel
-        data={data}
-        orientation={orientation}
-        layout="double"
-        showBoxSize={showBoxSize}
-        showWeight={showWeight}
-      />
-      <DunLabel
-        data={data}
-        orientation={orientation}
-        layout="double"
-        showBoxSize={showBoxSize}
-        showWeight={showWeight}
-      />
+      <DunLabel data={data} orientation={orientation} layout="double" />
+      <DunLabel data={data} orientation={orientation} layout="double" />
     </div>
   );
 }

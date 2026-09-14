@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import type { DunLabel } from "@/types/dun";
-import { buildGS1Strings } from "@/app/_utils/gs1";
 
 const Barcode = dynamic(() => import("react-barcode"), { ssr: false });
 
@@ -10,28 +9,16 @@ type Props = {
   data: DunLabel;
   orientation?: "portrait" | "landscape";
   layout?: "single" | "double"; // Layout: 1 ou 2 etiquetas por folha
-  showBoxSize?: boolean; // Mostrar tamanho da caixa
-  showWeight?: boolean; // Mostrar peso da caixa
 };
 
 export default function DunLabel({
   data,
   orientation = "portrait",
   layout = "single",
-  showBoxSize = true,
-  showWeight = true,
 }: Props) {
   // Ajustes finos (testar na sua Zebra e leitor)
-  const itfWidth = 2.0,
-    itfHeight = 120;
-  const gs1Width = 2.0,
-    gs1Height = 110;
-  const skuWidth = 2.0,
-    skuHeight = 90;
-
-  const gs1 = buildGS1Strings({
-    gtin14: data.gtin14,
-  });
+  const itfWidth = 2.0;
+  const skuWidth = 2.0;
 
   const isLandscape = orientation === "landscape";
   const isDouble = layout === "double";
@@ -128,20 +115,6 @@ export default function DunLabel({
                   <div className="text-black">{data.sku}</div>
                   <div className="font-semibold text-black">Qtd/Caixa:</div>
                   <div className="text-black">{data.qtyPerBox}</div>
-                  {showBoxSize && (
-                    <>
-                      <div className="font-semibold text-black">
-                        Tam. Caixa:
-                      </div>
-                      <div className="text-black">{data.boxSize}</div>
-                    </>
-                  )}
-                  {showWeight && (
-                    <>
-                      <div className="font-semibold text-black">Peso (kg):</div>
-                      <div className="text-black">{data.weightKg}</div>
-                    </>
-                  )}
                 </div>
               )}
             </div>
@@ -165,6 +138,7 @@ export default function DunLabel({
                 width={itfWidth}
                 height={isDouble ? 18 : 80}
                 margin={0}
+                className="max-w-full h-auto"
               />
             </div>
             <div className="w-full flex justify-center">
@@ -177,6 +151,7 @@ export default function DunLabel({
                 width={skuWidth}
                 height={isDouble ? 18 : 80}
                 margin={0}
+                className="max-w-full h-auto"
               />
             </div>
           </div>
@@ -248,18 +223,6 @@ export default function DunLabel({
                 <div className="text-black">{data.sku}</div>
                 <div className="font-semibold text-black">Qtd/Caixa:</div>
                 <div className="text-black">{data.qtyPerBox}</div>
-                {showBoxSize && (
-                  <>
-                    <div className="font-semibold text-black">Tam. Caixa:</div>
-                    <div className="text-black">{data.boxSize}</div>
-                  </>
-                )}
-                {showWeight && (
-                  <>
-                    <div className="font-semibold text-black">Peso (kg):</div>
-                    <div className="text-black">{data.weightKg}</div>
-                  </>
-                )}
               </div>
             )}
           </div>
@@ -285,6 +248,7 @@ export default function DunLabel({
                 width={itfWidth}
                 height={isDouble ? 18 : 90}
                 margin={0}
+                className="max-w-full h-auto"
               />
             </div>
 
@@ -299,6 +263,7 @@ export default function DunLabel({
                 width={skuWidth}
                 height={isDouble ? 18 : 80}
                 margin={0}
+                className="max-w-full h-auto"
               />
             </div>
           </div>

@@ -55,16 +55,12 @@ export function exportToJSON(labelSet: SavedLabelSet): void {
 }
 
 export function exportToCSV(labels: DunLabel[]): void {
-  const headers = ["sku", "gtin14", "product", "qtyPerBox", "boxSize", "weightKg", "lot", "expiry"];
+  const headers = ["sku", "gtin14", "product", "qtyPerBox"];
   const rows = labels.map((label) => [
     label.sku,
     label.gtin14,
     label.product,
     label.qtyPerBox.toString(),
-    label.boxSize,
-    label.weightKg,
-    label.lot || "",
-    label.expiry || "",
   ]);
   
   const csvContent = [

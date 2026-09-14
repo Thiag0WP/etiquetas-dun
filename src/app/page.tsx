@@ -36,8 +36,8 @@ export default function Home() {
                 Etiquetas DUN - GS1
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-4">
-                Gerador de etiquetas com padrão GS1, incluindo GTIN-14, lote e
-                validade.
+                Gerador de etiquetas com padrão GS1, incluindo GTIN-14, SKU e
+                código de barras.
               </p>
               <div className="flex items-center text-blue-500 font-semibold">
                 Acessar
