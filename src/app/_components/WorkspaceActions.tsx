@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 type Props = {
   onPrint: () => void;
   onDownloadPDF: () => void;
+  onDownloadZip: () => void;
   onLoad: () => void;
   onExportCSV: () => void;
   extra?: ReactNode;
@@ -13,6 +14,7 @@ type Props = {
 export function WorkspaceActions({
   onPrint,
   onDownloadPDF,
+  onDownloadZip,
   onLoad,
   onExportCSV,
   extra,
@@ -30,6 +32,12 @@ export function WorkspaceActions({
         className="px-4 py-2 rounded-xl bg-green-600 text-white shadow"
       >
         Baixar PDF
+      </button>
+      <button
+        onClick={onDownloadZip}
+        className="px-4 py-2 rounded-xl bg-teal-600 text-white shadow"
+      >
+        Baixar ZIP (PDF por SKU)
       </button>
       <button
         onClick={onLoad}

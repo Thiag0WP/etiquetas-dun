@@ -29,6 +29,7 @@ export default function PageCsv() {
     validationFeedback,
     handleCSV,
     handleDownloadPDF,
+    handleDownloadZip,
     handleLoad,
     handleDelete,
     addLabel,
@@ -36,6 +37,14 @@ export default function PageCsv() {
   } = useLabelWorkspace();
 
   const labelRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const getZipItems = () =>
+    labels
+      .map((d, i) => ({ element: labelRefs.current[i], sku: d.sku }))
+      .filter(
+        (item): item is { element: HTMLDivElement; sku: string } =>
+          item.element !== null
+      );
 
   return (
     <main className="min-h-dvh bg-neutral-100 p-6 print:bg-white relative">
@@ -70,6 +79,7 @@ export default function PageCsv() {
                 labelRefs.current.filter((el): el is HTMLDivElement => el !== null)
               )
             }
+            onDownloadZip={() => handleDownloadZip(getZipItems())}
             onLoad={() => setShowLoadDialog(true)}
             onExportCSV={() => exportToCSV(labels)}
           />

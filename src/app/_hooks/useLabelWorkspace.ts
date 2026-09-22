@@ -16,7 +16,11 @@ import {
   deleteLabelSet,
   type SavedLabelSet,
 } from "@/app/_utils/labelStorage";
-import { exportLabelsToPDF } from "@/app/_utils/pdfExport";
+import {
+  exportLabelsToPDF,
+  exportLabelsToZip,
+  type ZipLabelItem,
+} from "@/app/_utils/pdfExport";
 import type { DunLabel } from "@/types/dun";
 
 export type InvalidLabel = DunLabel & { errors: string[] };
@@ -116,6 +120,35 @@ export function useLabelWorkspace(initialLabels: DunLabel[] = []) {
     }
   };
 
+  /** Gera e baixa um .zip com um PDF separado por etiqueta, nomeado pelo SKU. */
+  const handleDownloadZip = async (items: ZipLabelItem[]) => {
+    if (items.length === 0) {
+      showError("Não há etiquetas para gerar o ZIP");
+      return;
+    }
+
+    setIsLoading(true);
+    setLoadingMessage("Gerando ZIP com PDFs individuais...");
+
+    try {
+      await exportLabelsToZip(
+        items,
+        orientation,
+        layout,
+        `etiquetas-dun-${Date.now()}.zip`
+      );
+      showSuccess("ZIP gerado com sucesso!");
+    } catch (err) {
+      showError(
+        "Erro ao gerar ZIP: " +
+          (err instanceof Error ? err.message : "erro desconhecido")
+      );
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage("");
+    }
+  };
+
   const handleLoad = async (set: SavedLabelSet) => {
     setIsLoading(true);
     setLoadingMessage("Carregando etiquetas...");
@@ -183,6 +216,7 @@ export function useLabelWorkspace(initialLabels: DunLabel[] = []) {
     validationFeedback,
     handleCSV,
     handleDownloadPDF,
+    handleDownloadZip,
     handleLoad,
     handleDelete,
     addLabel,
