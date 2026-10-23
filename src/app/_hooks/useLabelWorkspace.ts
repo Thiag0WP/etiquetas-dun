@@ -1,56 +1,51 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import Papa from "papaparse";
 import { useToast } from "@/app/_components/Toast";
-import { parseLabelRows } from "@/app/_utils/csvParser";
-import {
-  validateLabelList,
-  validateGTIN14,
-  validateSKU,
-  validateProduct,
-  validateQuantity,
-} from "@/app/_utils/validation";
-import {
-  getSavedLabelSets,
-  deleteLabelSet,
-  type SavedLabelSet,
-} from "@/app/_utils/labelStorage";
-import {
-  exportLabelsToPDF,
-  exportLabelsToZip,
-  type ZipLabelItem,
-} from "@/app/_utils/pdfExport";
-import type { DunLabel } from "@/types/dun";
+import { validateLabelList } from "@/app/_utils/validation";
+import { exportLabelsToPDF, exportLabelsToZip } from "@/app/_utils/pdfExport";
 
-export type InvalidLabel = DunLabel & { errors: string[] };
+export type InvalidLabel<T> = T & { errors: string[] };
 
-export type ImportFeedback = {
+export type ImportFeedback<T> = {
   validCount: number;
   invalidCount: number;
-  invalidLabels: InvalidLabel[];
+  invalidLabels: InvalidLabel<T>[];
 };
 
-/** Estado e ações compartilhadas entre as páginas de etiqueta única e importação CSV. */
-export function useLabelWorkspace(initialLabels: DunLabel[] = []) {
-  const [labels, setLabels] = useState<DunLabel[]>(initialLabels);
+type WorkspaceConfig<T> = {
+  initialLabels?: T[];
+  /** Converte as linhas cruas do CSV em etiquetas. */
+  parseRows: (rows: Record<string, unknown>[]) => T[];
+  /** Retorna os erros de uma etiqueta (vazio se válida). */
+  validate: (label: T) => string[];
+  /** Nome de cada PDF dentro do ZIP (padrão: SKU). */
+  zipFileName?: (label: T) => string;
+};
+
+/** Estado e ações compartilhadas entre as páginas de etiquetas (DUN, CSV, bonificado). */
+export function useLabelWorkspace<T extends { sku: string }>({
+  initialLabels = [],
+  parseRows,
+  validate,
+  zipFileName = (label) => label.sku,
+}: WorkspaceConfig<T>) {
+  const [labels, setLabels] = useState<T[]>(initialLabels);
   const [orientation, setOrientation] = useState<"portrait" | "landscape">(
     "portrait"
   );
   const [layout, setLayout] = useState<"single" | "double">("single");
-  const [savedSets, setSavedSets] = useState<SavedLabelSet[]>([]);
-  const [showLoadDialog, setShowLoadDialog] = useState(false);
   const [showManualDialog, setShowManualDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [validationFeedback, setValidationFeedback] =
-    useState<ImportFeedback | null>(null);
+    useState<ImportFeedback<T> | null>(null);
+
+  /** Nó DOM de cada etiqueta renderizada, na mesma ordem de `labels`. */
+  const labelRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const { showSuccess, showError, showWarning } = useToast();
-
-  useEffect(() => {
-    setSavedSets(getSavedLabelSets());
-  }, []);
 
   function handleCSV(file: File) {
     setIsLoading(true);
@@ -60,8 +55,8 @@ export function useLabelWorkspace(initialLabels: DunLabel[] = []) {
       header: true,
       skipEmptyLines: true,
       complete: (res) => {
-        const rows = parseLabelRows(res.data as Record<string, unknown>[]);
-        const { validLabels, invalidLabels } = validateLabelList(rows);
+        const rows = parseRows(res.data as Record<string, unknown>[]);
+        const { validLabels, invalidLabels } = validateLabelList(rows, validate);
 
         setLabels(validLabels);
         setValidationFeedback({
@@ -91,8 +86,21 @@ export function useLabelWorkspace(initialLabels: DunLabel[] = []) {
     });
   }
 
+  /** Pares etiqueta/nó DOM das etiquetas atualmente renderizadas. */
+  const getRenderedLabels = () =>
+    labels
+      .map((label, i) => ({
+        element: labelRefs.current[i],
+        name: zipFileName(label),
+      }))
+      .filter(
+        (item): item is { element: HTMLDivElement; name: string } =>
+          item.element != null
+      );
+
   /** Gera e baixa um PDF com uma página por etiqueta, no tamanho físico exato. */
-  const handleDownloadPDF = async (nodes: HTMLElement[]) => {
+  const handleDownloadPDF = async () => {
+    const nodes = getRenderedLabels().map((item) => item.element);
     if (nodes.length === 0) {
       showError("Não há etiquetas para gerar o PDF");
       return;
@@ -106,7 +114,7 @@ export function useLabelWorkspace(initialLabels: DunLabel[] = []) {
         nodes,
         orientation,
         layout,
-        `etiquetas-dun-${Date.now()}.pdf`
+        `etiquetas-${Date.now()}.pdf`
       );
       showSuccess("PDF gerado com sucesso!");
     } catch (err) {
@@ -120,8 +128,9 @@ export function useLabelWorkspace(initialLabels: DunLabel[] = []) {
     }
   };
 
-  /** Gera e baixa um .zip com um PDF separado por etiqueta, nomeado pelo SKU. */
-  const handleDownloadZip = async (items: ZipLabelItem[]) => {
+  /** Gera e baixa um .zip com um PDF separado por etiqueta, nomeado por `zipFileName`. */
+  const handleDownloadZip = async () => {
+    const items = getRenderedLabels();
     if (items.length === 0) {
       showError("Não há etiquetas para gerar o ZIP");
       return;
@@ -135,7 +144,7 @@ export function useLabelWorkspace(initialLabels: DunLabel[] = []) {
         items,
         orientation,
         layout,
-        `etiquetas-dun-${Date.now()}.zip`
+        `etiquetas-${Date.now()}.zip`
       );
       showSuccess("ZIP gerado com sucesso!");
     } catch (err) {
@@ -149,44 +158,11 @@ export function useLabelWorkspace(initialLabels: DunLabel[] = []) {
     }
   };
 
-  const handleLoad = async (set: SavedLabelSet) => {
-    setIsLoading(true);
-    setLoadingMessage("Carregando etiquetas...");
-
-    // Simular operação assíncrona para feedback visual
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    setLabels(set.labels);
-    setOrientation(set.orientation || "portrait");
-    setShowLoadDialog(false);
-
-    setIsLoading(false);
-    setLoadingMessage("");
-  };
-
-  const handleDelete = (id: string) => {
-    if (confirm("Deseja realmente excluir este conjunto de etiquetas?")) {
-      deleteLabelSet(id);
-      setSavedSets(getSavedLabelSets());
-    }
-  };
-
   /** Adiciona uma etiqueta digitada manualmente. Retorna false e mostra o erro se inválida. */
-  const addLabel = (label: DunLabel): boolean => {
-    if (!validateGTIN14(label.gtin14)) {
-      showError("GTIN-14 inválido: deve ter 14 dígitos com dígito verificador correto");
-      return false;
-    }
-    if (!validateSKU(label.sku)) {
-      showError("SKU deve ter pelo menos 3 caracteres");
-      return false;
-    }
-    if (!validateProduct(label.product)) {
-      showError("Produto deve ter pelo menos 2 caracteres");
-      return false;
-    }
-    if (!validateQuantity(label.qtyPerBox)) {
-      showError("Quantidade por caixa deve ser um número inteiro positivo");
+  const addLabel = (label: T): boolean => {
+    const errors = validate(label);
+    if (errors.length > 0) {
+      showError(errors[0]);
       return false;
     }
 
@@ -202,13 +178,11 @@ export function useLabelWorkspace(initialLabels: DunLabel[] = []) {
   return {
     labels,
     setLabels,
+    labelRefs,
     orientation,
     setOrientation,
     layout,
     setLayout,
-    savedSets,
-    showLoadDialog,
-    setShowLoadDialog,
     showManualDialog,
     setShowManualDialog,
     isLoading,
@@ -217,8 +191,6 @@ export function useLabelWorkspace(initialLabels: DunLabel[] = []) {
     handleCSV,
     handleDownloadPDF,
     handleDownloadZip,
-    handleLoad,
-    handleDelete,
     addLabel,
     removeLabel,
   };

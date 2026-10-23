@@ -3,7 +3,7 @@
 import type { ImportFeedback } from "@/app/_hooks/useLabelWorkspace";
 
 type Props = {
-  feedback: ImportFeedback | null;
+  feedback: ImportFeedback<{ sku: string; gtin14?: string }> | null;
 };
 
 export function ImportFeedbackPanel({ feedback }: Props) {
@@ -35,7 +35,8 @@ export function ImportFeedbackPanel({ feedback }: Props) {
                 className="border-l-4 border-red-400 pl-3 py-2 bg-red-50"
               >
                 <div className="font-medium text-red-800">
-                  SKU: {label.sku || "N/A"} | GTIN: {label.gtin14 || "N/A"}
+                  SKU: {label.sku || "N/A"}
+                  {"gtin14" in label && ` | GTIN: ${label.gtin14 || "N/A"}`}
                 </div>
                 <div className="text-red-600 text-xs">
                   {label.errors.join(", ")}

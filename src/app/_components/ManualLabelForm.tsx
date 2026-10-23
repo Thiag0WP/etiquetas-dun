@@ -1,15 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import type { DunLabel } from "@/types/dun";
 
-type Props = {
-  show: boolean;
-  onClose: () => void;
-  onAdd: (label: DunLabel) => boolean;
+export type FormField = {
+  key: string;
+  label: string;
+  placeholder?: string;
+  type?: string;
+  min?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
 };
 
-const emptyForm = { sku: "", gtin14: "", product: "", qtyPerBox: "" };
+type Props<T> = {
+  show: boolean;
+  onClose: () => void;
+  onAdd: (label: T) => boolean;
+  fields: FormField[];
+  /** Converte os valores digitados (já sem espaços nas pontas) na etiqueta. */
+  toLabel: (values: Record<string, string>) => T;
+};
 
 function Field({
   label,
@@ -28,62 +37,48 @@ function Field({
   );
 }
 
-export function ManualLabelForm({ show, onClose, onAdd }: Props) {
+export function ManualLabelForm<T>({
+  show,
+  onClose,
+  onAdd,
+  fields,
+  toLabel,
+}: Props<T>) {
+  const emptyForm = () =>
+    Object.fromEntries(fields.map((f) => [f.key, ""])) as Record<string, string>;
   const [form, setForm] = useState(emptyForm);
 
   if (!show) return null;
 
   const handleClose = () => {
-    setForm(emptyForm);
+    setForm(emptyForm());
     onClose();
   };
 
   const handleAdd = () => {
-    const added = onAdd({
-      sku: form.sku.trim(),
-      gtin14: form.gtin14.trim(),
-      product: form.product.trim(),
-      qtyPerBox: Number(form.qtyPerBox.toString().replace(",", ".")) || 0,
-    });
-    if (added) {
-      setForm(emptyForm);
+    const trimmed = Object.fromEntries(
+      Object.entries(form).map(([k, v]) => [k, v.trim()])
+    );
+    if (onAdd(toLabel(trimmed))) {
+      setForm(emptyForm());
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
         <h2 className="text-xl font-bold mb-4 text-black">
           Adicionar Etiqueta
         </h2>
         <div className="space-y-3">
-          <Field
-            label="SKU"
-            value={form.sku}
-            onChange={(e) => setForm({ ...form, sku: e.target.value })}
-            placeholder="D24-ALV26278"
-          />
-          <Field
-            label="GTIN-14"
-            value={form.gtin14}
-            onChange={(e) => setForm({ ...form, gtin14: e.target.value })}
-            placeholder="14 dígitos"
-            inputMode="numeric"
-          />
-          <Field
-            label="Produto"
-            value={form.product}
-            onChange={(e) => setForm({ ...form, product: e.target.value })}
-            placeholder="Nome do produto"
-          />
-          <Field
-            label="Qtd/Caixa"
-            type="number"
-            min="1"
-            value={form.qtyPerBox}
-            onChange={(e) => setForm({ ...form, qtyPerBox: e.target.value })}
-            placeholder="24"
-          />
+          {fields.map(({ key, ...field }) => (
+            <Field
+              key={key}
+              {...field}
+              value={form[key] ?? ""}
+              onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+            />
+          ))}
         </div>
         <div className="flex gap-3 justify-end mt-6">
           <button

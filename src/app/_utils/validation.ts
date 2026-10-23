@@ -1,6 +1,9 @@
+import type { DunLabel } from "@/types/dun";
+import type { BonusLabel } from "@/types/bonus";
+
 // Função para validar GTIN-14
 export function validateGTIN14(gtin: string): boolean {
-  if (!gtin || gtin.length !== 14) return false;
+  if (!gtin) return false;
 
   // Remove espaços e verifica se contém apenas números
   const cleaned = gtin.replace(/\s/g, '');
@@ -34,29 +37,40 @@ export function validateQuantity(qty: number): boolean {
   return Number.isInteger(qty) && qty > 0;
 }
 
+/** Retorna a lista de erros de uma etiqueta DUN (vazia se válida). */
+export function validateDunLabel(label: DunLabel): string[] {
+  return [
+    !validateGTIN14(label.gtin14) &&
+      "GTIN-14 inválido: deve ter 14 dígitos com dígito verificador correto",
+    !validateSKU(label.sku) && "SKU deve ter pelo menos 3 caracteres",
+    !validateProduct(label.product) && "Produto deve ter pelo menos 2 caracteres",
+    !validateQuantity(label.qtyPerBox) &&
+      "Quantidade por caixa deve ser um número inteiro positivo",
+  ].filter((e): e is string => Boolean(e));
+}
+
+/** Retorna a lista de erros de uma etiqueta de bonificado (vazia se válida). */
+export function validateBonusLabel(label: BonusLabel): string[] {
+  return [
+    !validateSKU(label.sku) && "SKU deve ter pelo menos 3 caracteres",
+    !validateProduct(label.product) && "Descrição deve ter pelo menos 2 caracteres",
+  ].filter((e): e is string => Boolean(e));
+}
+
 // Função para validar lista inteira de labels
-export function validateLabelList(labels: any[]): { validLabels: any[]; invalidLabels: any[] } {
-  const validLabels: any[] = [];
-  const invalidLabels: any[] = [];
+export function validateLabelList<T>(
+  labels: T[],
+  validate: (label: T) => string[]
+): { validLabels: T[]; invalidLabels: (T & { errors: string[] })[] } {
+  const validLabels: T[] = [];
+  const invalidLabels: (T & { errors: string[] })[] = [];
 
-  labels.forEach(label => {
-    const isGtin14Valid = validateGTIN14(label.gtin14);
-    const isSkuValid = validateSKU(label.sku);
-    const isProductValid = validateProduct(label.product);
-    const isQuantityValid = validateQuantity(label.qtyPerBox);
-
-    if (isGtin14Valid && isSkuValid && isProductValid && isQuantityValid) {
+  labels.forEach((label) => {
+    const errors = validate(label);
+    if (errors.length === 0) {
       validLabels.push(label);
     } else {
-      invalidLabels.push({
-        ...label,
-        errors: [
-          !isGtin14Valid && 'GTIN-14 inválido',
-          !isSkuValid && 'SKU inválido',
-          !isProductValid && 'Produto inválido',
-          !isQuantityValid && 'Quantidade inválida',
-        ].filter(Boolean)
-      });
+      invalidLabels.push({ ...label, errors });
     }
   });
 

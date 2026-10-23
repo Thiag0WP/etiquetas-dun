@@ -9,6 +9,7 @@ Sistema para geração de etiquetas DUN (Data Universal de Numeração) com cód
 - ✅ Códigos de barras no padrão GS1
 - ✅ QR codes para facilitar a leitura
 - ✅ Interface responsiva e moderna
+- ✅ Etiquetas de bonificado (descrição + SKU)
 - ✅ Impressão otimizada das etiquetas
 
 ## 🛠️ Tecnologias
@@ -41,19 +42,13 @@ cd etiquetas-dun
 npm install
 ```
 
-3. Configure as dependências específicas do projeto:
-
-```bash
-npm run setup
-```
-
-4. Execute o projeto em modo de desenvolvimento:
+3. Execute o projeto em modo de desenvolvimento:
 
 ```bash
 npm run dev
 ```
 
-5. Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
+4. Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
 
 ## 📖 Como usar
 
@@ -78,6 +73,18 @@ npm run dev
    e `QUANTIDADE POR CAIXA`. Use o botão "Baixar modelo CSV" na página de
    Etiqueta Individual para baixar um exemplo pronto.
 3. Visualize e imprima as etiquetas geradas
+
+### Etiqueta de Bonificado
+
+1. Acesse "Etiquetas Bonificado" na página inicial
+2. Faça upload de um CSV com as colunas `sku` e `product` (descrição), ou
+   adicione manualmente. Exemplo:
+   - `product`: `Bonificado - DUN 12un Creme Hidratante Reparador 50ml Alva`
+   - `sku`: `BON-D12-ALV42889`
+
+   A quantidade por caixa é lida da descrição (ex.: `12un` → **12 UN**).
+   Use "Baixar modelo CSV" para baixar um exemplo pronto.
+3. Imprima ou baixe em PDF / ZIP (um PDF por SKU)
 
 ## 📁 Estrutura do Projeto
 

@@ -6,8 +6,8 @@ type Props = {
   onPrint: () => void;
   onDownloadPDF: () => void;
   onDownloadZip: () => void;
-  onLoad: () => void;
   onExportCSV: () => void;
+  zipLabel?: string;
   extra?: ReactNode;
 };
 
@@ -15,8 +15,8 @@ export function WorkspaceActions({
   onPrint,
   onDownloadPDF,
   onDownloadZip,
-  onLoad,
   onExportCSV,
+  zipLabel = "Baixar ZIP (PDF por SKU)",
   extra,
 }: Props) {
   return (
@@ -37,13 +37,7 @@ export function WorkspaceActions({
         onClick={onDownloadZip}
         className="px-4 py-2 rounded-xl bg-teal-600 text-white shadow"
       >
-        Baixar ZIP (PDF por SKU)
-      </button>
-      <button
-        onClick={onLoad}
-        className="px-4 py-2 rounded-xl bg-blue-600 text-white shadow"
-      >
-        Carregar Salvas
+        {zipLabel}
       </button>
       <button
         onClick={onExportCSV}

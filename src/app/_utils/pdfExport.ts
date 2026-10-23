@@ -1,5 +1,5 @@
 import type jsPDFType from "jspdf";
-import type html2canvasType from "html2canvas";
+import type html2canvasType from "html2canvas-pro";
 
 type Orientation = "portrait" | "landscape";
 type Layout = "single" | "double";
@@ -66,7 +66,7 @@ export async function exportLabelsToPDF(
 
   const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
     import("jspdf"),
-    import("html2canvas"),
+    import("html2canvas-pro"),
   ]);
 
   const { width, height } = getPageSizeMM(orientation, layout);
@@ -80,7 +80,7 @@ export async function exportLabelsToPDF(
       pdf.addPage([width, height], pageOrientation);
     }
 
-    pdf.addImage(imgData, "PNG", 0, 0, width, height);
+    pdf.addImage(imgData, "PNG", 0, 0, width, height, undefined, "FAST");
   }
 
   pdf.save(filename);
@@ -91,18 +91,19 @@ function sanitizeFilename(name: string): string {
   const cleaned = name
     .trim()
     .replace(/[\\/:*?"<>|]+/g, "_")
-    .replace(/\s+/g, "_");
+    .replace(/\s+/g, " ");
   return cleaned || "etiqueta";
 }
 
 export type ZipLabelItem = {
   element: HTMLElement;
-  sku: string;
+  /** Nome do PDF dentro do .zip (sem extensão). */
+  name: string;
 };
 
 /**
  * Gera um .zip com um PDF separado por etiqueta, cada um no tamanho físico
- * exato e nomeado com o SKU da etiqueta (SKUs repetidos ganham sufixo -2, -3...).
+ * exato e nomeado pelo `name` de cada item (nomes repetidos ganham sufixo -2, -3...).
  */
 export async function exportLabelsToZip(
   items: ZipLabelItem[],
@@ -115,7 +116,7 @@ export async function exportLabelsToZip(
   const [{ default: jsPDF }, { default: html2canvas }, { default: JSZip }] =
     await Promise.all([
       import("jspdf"),
-      import("html2canvas"),
+      import("html2canvas-pro"),
       import("jszip"),
     ]);
 
@@ -123,14 +124,14 @@ export async function exportLabelsToZip(
   const zip = new JSZip();
   const usedNames = new Map<string, number>();
 
-  for (const { element, sku } of items) {
+  for (const { element, name } of items) {
     const imgData = await captureLabelAsPNG(element, html2canvas);
 
     const pdf = makePdf(jsPDF, width, height);
-    pdf.addImage(imgData, "PNG", 0, 0, width, height);
+    pdf.addImage(imgData, "PNG", 0, 0, width, height, undefined, "FAST");
     const blob = pdf.output("blob");
 
-    const baseName = sanitizeFilename(sku);
+    const baseName = sanitizeFilename(name);
     const usedCount = usedNames.get(baseName) ?? 0;
     usedNames.set(baseName, usedCount + 1);
     const finalName = usedCount === 0 ? baseName : `${baseName}-${usedCount + 1}`;
